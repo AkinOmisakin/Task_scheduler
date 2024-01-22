@@ -117,11 +117,11 @@ def get_timetable_data(driver):
     # classes_thursday = Thursday_classes.find_all("div", class_="timetable-event") ; print(classes_thursday)
     # classes_friday = Friday_classes.find_all("div", class_="timetable-event") ; print(classes_friday)
 
-    # add monday classes to timetable_data
+    """ add classes as objects to the timetable_data list"""
     for class_divs in classes_monday:
-        print(class_divs)
-        time_index = get_index_time(class_divs, pixel_locations)
-        time_of_monday_class = timez[time_index]
+        start_time_index,end_time_index = get_index_time(class_divs, pixel_locations)
+        start_time = timez[start_time_index]
+        end_time = timez[end_time_index]
         class_name = class_divs.find("p", class_="event-title ellipsis").text # eg CS3205
         class_location_name = class_divs.find("div", class_="event-details").find("a").text # eg Fraser Noble 1
         class_location_google_maps_link = class_divs.find("div", class_="event-details").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
@@ -130,9 +130,10 @@ def get_timetable_data(driver):
             "class_name": class_name,
             "class_location_name": class_location_name,
             "class_location_google_maps_link": class_location_google_maps_link,
-            "class_time": time_of_monday_class
+            "start_time": start_time,
+            "end_time": end_time
         }
-        
+
         timetable_data.append({
             "day": "Monday",
             "class": class_constructer
@@ -218,18 +219,26 @@ def get_timetable_data(driver):
     return timetable_data
 
 def get_index_time(class_divs, pixel_locations) -> int:
-    time_index = 0
+    start_time_index,end_time_index = -1,-1
+    height_value = -1
+    top_value = -1
     ads = class_divs['style'] # get the style attributes
     list1 = ads.strip(' ').split(';') # divide the style attributes into a list
     for item in list1:
         key_item = item.split(':')[0].strip(' ')
+        # get the value of the height attribute
+        if key_item == 'height':
+            height_item_value = item.split(':')[1].strip(' ') 
+            height_value = int(height_item_value.strip('px')) + 1 # 59 + 601 = 660 ERROR 59 + 601 + 1 = 661 CORRECT
         if key_item == 'top': # find the top attribute
-            key_item_value = item.split(':')[1].strip(' ') # get the value of the top attribute
-            key_item_value = int(key_item_value.strip('px'))
-            for i in pixel_locations:
-                if key_item_value == i:
-                    time_index = pixel_locations.index(int(key_item_value))
-    return time_index
+            top_item_value = item.split(':')[1].strip(' ') # get the value of the top attribute
+            top_value = int(top_item_value.strip('px'))
+    for i in pixel_locations:
+        if top_value == i:
+            start_time_index = pixel_locations.index(int(top_value))
+        if top_value + height_value == i:
+            end_time_index = pixel_locations.index(int(top_value + height_value))
+    return start_time_index,end_time_index
 
 """ This method parses the timetable data and schedules the classes"""
 def parse_timetable_data(timetable_data):
