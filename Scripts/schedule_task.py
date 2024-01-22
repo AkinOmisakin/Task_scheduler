@@ -85,41 +85,25 @@ def get_timetable_data(driver):
     pixel_locations = range(1, 1441, 60)
     # [1, 61, 121, 181, 241, 301, 361, 421, 481, 541, 601, 661, 721, 781, 841, 901, 961, 1021, 1081, 1141, 1201, 1261, 1321, 1381]
 
-    time_index = 0
-
     # all the scheduled classes for each day
     Monday_classes = timetable_.find("div", id="timetable-day-event-column-0")
-    """ This section of code is used to get the time of the first class on Monday ( for example purposes only)"""
-    # ads = Monday_classes['style']
-    # list1 = ads.strip(' ').split(';')
-    # for item in list1:
-    #     key_item = item.split(':')[0].strip(' ')
-    #     if key_item == 'top':
-    #         print("key found")
-    #         key_item_value = item.split(':')[1].strip(' ')
-    #         key_item_value = key_item_value.strip('px')
-    #         if key_item_value in pixel_locations:
-    #             print("value found")
-    #             time_index = pixel_locations.index(int(key_item_value))
-    #     else:
-    #         print("key not found")
-    # time_of_monday_class = timez[time_index]
-
-    # Tuesday_classes = timetable_.find("div", id="timetable-day-event-column-1") ; print(Tuesday_classes)
-    # Wednesday_classes = timetable_.find("div", id="timetable-day-event-column-2") ; print(Wednesday_classes)
-    # Thursday_classes = timetable_.find("div", id="timetable-day-event-column-3") ; print(Thursday_classes)
-    # Friday_classes = timetable_.find("div", id="timetable-day-event-column-4") ; print(Friday_classes)
+    Tuesday_classes = timetable_.find("div", id="timetable-day-event-column-1")
+    Wednesday_classes = timetable_.find("div", id="timetable-day-event-column-2")
+    Thursday_classes = timetable_.find("div", id="timetable-day-event-column-3")
+    Friday_classes = timetable_.find("div", id="timetable-day-event-column-4")
 
     # get all the classes for each day
     classes_monday = Monday_classes.find_all("div", class_="timetable-event")
-    # classes_tuesday = Tuesday_classes.find_all("div", class_="timetable-event") ; print(classes_tuesday)
-    # classes_wednesday = Wednesday_classes.find_all("div", class_="timetable-event") ; print(classes_wednesday)
-    # classes_thursday = Thursday_classes.find_all("div", class_="timetable-event") ; print(classes_thursday)
-    # classes_friday = Friday_classes.find_all("div", class_="timetable-event") ; print(classes_friday)
+    classes_tuesday = Tuesday_classes.find_all("div", class_="timetable-event")
+    classes_wednesday = Wednesday_classes.find_all("div", class_="timetable-event")
+    classes_thursday = Thursday_classes.find_all("div", class_="timetable-event")
+    classes_friday = Friday_classes.find_all("div", class_="timetable-event")
 
     """ add classes as objects to the timetable_data list"""
     for class_divs in classes_monday:
         start_time_index,end_time_index = get_index_time(class_divs, pixel_locations)
+        if start_time_index == -1 or end_time_index == -1:
+            continue
         start_time = timez[start_time_index]
         end_time = timez[end_time_index]
         class_name = class_divs.find("p", class_="event-title ellipsis").text # eg CS3205
@@ -139,82 +123,98 @@ def get_timetable_data(driver):
             "class": class_constructer
         })
 
-    # for class_divs in classes_tuesday:
-    #     time_idx = get_index_time(class_divs, pixel_locations)
-    #     time_of_tuesday_class = timez[time_idx]
-    #     class_name = class_divs.find("p", class_="event-title  ellipsis").text # eg CS3205
-    #     class_type = class_divs.find("span").text # eg Lecture
-    #     class_name = " ".join([class_name, class_type]) # eg CS3205 Lecture
-    #     class_location_name = class_divs.find("div", class_="event-details").find("a")["href"].text # eg Fraser Noble 1
-    #     class_location_google_maps_link = class_divs.find("div", class_="event-location").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
-    #     class_constructer = {
-    #         "class name": class_name,
-    #         "class_location_name": class_location_name,
-    #         "class_location_google_maps_link": class_location_google_maps_link,
-    #         "class_time": time_of_tuesday_class
-    #     }
-    #     timetable_data.append({
-    #         "day": "Tuesday",
-    #         "class": class_constructer
-    #     })
+    for class_divs in classes_tuesday:
+        start_time_index,end_time_index = get_index_time(class_divs, pixel_locations)
+        if start_time_index == -1:
+            continue
+        start_time = timez[start_time_index]
+        end_time = timez[end_time_index]
+        class_name = class_divs.find("p", class_="event-title ellipsis").text # eg CS3205
+        class_location_name = class_divs.find("div", class_="event-details").find("a").text # eg Fraser Noble 1
+        class_location_google_maps_link = class_divs.find("div", class_="event-details").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
+        
+        class_constructer = {
+            "class_name": class_name,
+            "class_location_name": class_location_name,
+            "class_location_google_maps_link": class_location_google_maps_link,
+            "start_time": start_time,
+            "end_time": end_time
+        }
 
-    # for class_divs in classes_wednesday:
-    #     time_idx = get_index_time(class_divs, pixel_locations)
-    #     time_wednesday_class = timez[time_idx]
-    #     class_name = class_divs.find("p", class_="event-title  ellipsis").text # eg CS3205
-    #     class_type = class_divs.find("span").text # eg Lecture
-    #     class_name = " ".join([class_name, class_type]) # eg CS3205 Lecture
-    #     class_location_name = class_divs.find("div", class_="event-details").find("a")["href"].text # eg Fraser Noble 1
-    #     class_location_google_maps_link = class_divs.find("div", class_="event-location").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
-    #     class_constructer = {
-    #         "class name": class_name,
-    #         "class_location_name": class_location_name,
-    #         "class_location_google_maps_link": class_location_google_maps_link,
-    #         "class_time": time_wednesday_class
-    #     }
-    #     timetable_data.append({
-    #         "day": "Wednesday",
-    #         "class": class_constructer #
-    #     })
-    # for class_divs in classes_thursday:
-    #     time_idx = get_index_time(class_divs, pixel_locations)
-    #     time_thursday_class = timez[time_idx]
-    #     class_name = class_divs.find("p", class_="event-title  ellipsis").text # eg CS3205
-    #     class_type = class_divs.find("span").text # eg Lecture
-    #     class_name = " ".join([class_name, class_type]) # eg CS3205 Lecture
-    #     class_location_name = class_divs.find("div", class_="event-details").find("a")["href"].text # eg Fraser Noble 1
-    #     class_location_google_maps_link = class_divs.find("div", class_="event-location").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
-    #     class_constructer = {
-    #         "class name": class_name,
-    #         "class_location_name": class_location_name,
-    #         "class_location_google_maps_link": class_location_google_maps_link,
-    #         "class_time": time_thursday_class
-    #     }
-    #     timetable_data.append({
-    #         "day": "Thursday",
-    #         "class": class_constructer
-    #     })
+        timetable_data.append({
+            "day": "Tuesday",
+            "class": class_constructer
+        })
 
-    # for class_divs in classes_friday:
-    #     time_idx = get_index_time(class_divs, pixel_locations)
-    #     time_friday_class = timez[time_idx]
-    #     class_name = class_divs.find("p", class_="event-title  ellipsis").text # eg CS3205
-    #     class_type = class_divs.find("span").text # eg Lecture
-    #     class_name = " ".join([class_name, class_type]) # eg CS3205 Lecture
-    #     class_location_name = class_divs.find("div", class_="event-details").find("a")["href"].text # eg Fraser Noble 1
-    #     class_location_google_maps_link = class_divs.find("div", class_="event-location").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
-    #     class_constructer = {
-    #         "class name": class_name,
-    #         "class_location_name": class_location_name,
-    #         "class_location_google_maps_link": class_location_google_maps_link,
-    #         "class_time": time_friday_class
-    #     }
-    #     timetable_data.append({
-    #         "day": "Friday",
-    #         "class": class_constructer
-    #     })
+    for class_divs in classes_wednesday:
+        start_time_index,end_time_index = get_index_time(class_divs, pixel_locations)
+        if start_time_index == -1:
+            continue
+        start_time = timez[start_time_index]
+        end_time = timez[end_time_index]
+        class_name = class_divs.find("p", class_="event-title ellipsis").text # eg CS3205
+        class_location_name = class_divs.find("div", class_="event-details").find("a").text # eg Fraser Noble 1
+        class_location_google_maps_link = class_divs.find("div", class_="event-details").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
+        
+        class_constructer = {
+            "class_name": class_name,
+            "class_location_name": class_location_name,
+            "class_location_google_maps_link": class_location_google_maps_link,
+            "start_time": start_time,
+            "end_time": end_time
+        }
+
+        timetable_data.append({
+            "day": "Wednesday",
+            "class": class_constructer
+        })
+
+    for class_divs in classes_thursday:
+        start_time_index,end_time_index = get_index_time(class_divs, pixel_locations)
+        if start_time_index == -1:
+            continue
+        start_time = timez[start_time_index]
+        end_time = timez[end_time_index]
+        class_name = class_divs.find("p", class_="event-title ellipsis").text # eg CS3205
+        class_location_name = class_divs.find("div", class_="event-details").find("a").text # eg Fraser Noble 1
+        class_location_google_maps_link = class_divs.find("div", class_="event-details").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
+        
+        class_constructer = {
+            "class_name": class_name,
+            "class_location_name": class_location_name,
+            "class_location_google_maps_link": class_location_google_maps_link,
+            "start_time": start_time,
+            "end_time": end_time
+        }
+
+        timetable_data.append({
+            "day": "Thursday",
+            "class": class_constructer
+        })
+
+    for class_divs in classes_friday:
+        start_time_index,end_time_index = get_index_time(class_divs, pixel_locations)
+        if start_time_index == -1:
+            continue
+        start_time = timez[start_time_index]
+        end_time = timez[end_time_index]
+        class_name = class_divs.find("p", class_="event-title ellipsis").text # eg CS3205
+        class_location_name = class_divs.find("div", class_="event-details").find("a").text # eg Fraser Noble 1
+        class_location_google_maps_link = class_divs.find("div", class_="event-details").find("a")["href"] # eg https://www.google.com/maps/search/?api=1&query=57.1645,-2.1017
+        
+        class_constructer = {
+            "class_name": class_name,
+            "class_location_name": class_location_name,
+            "class_location_google_maps_link": class_location_google_maps_link,
+            "start_time": start_time,
+            "end_time": end_time
+        }
+
+        timetable_data.append({
+            "day": "Friday",
+            "class": class_constructer
+        })
     
-    # print(timetable_data)
 
     return timetable_data
 
@@ -233,11 +233,13 @@ def get_index_time(class_divs, pixel_locations) -> int:
         if key_item == 'top': # find the top attribute
             top_item_value = item.split(':')[1].strip(' ') # get the value of the top attribute
             top_value = int(top_item_value.strip('px'))
+
     for i in pixel_locations:
         if top_value == i:
             start_time_index = pixel_locations.index(int(top_value))
         if top_value + height_value == i:
             end_time_index = pixel_locations.index(int(top_value + height_value))
+
     return start_time_index,end_time_index
 
 """ This method parses the timetable data and schedules the classes"""
