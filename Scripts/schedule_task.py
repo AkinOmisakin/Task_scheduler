@@ -1,15 +1,15 @@
 import os
-import sys
+import requests
 from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver import Chrome, ChromeOptions, ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-
+from datetime import datetime, timedelta
+from azure.identity.aio import ClientSecretCredential
+from msgraph import GraphServiceClient
 
 
 # Load the environment variables
@@ -19,7 +19,7 @@ load_dotenv(dotenv_path=dotenv_path)
 # read environment variables
 username = os.getenv('LOCAL_LOGIN_USERNAME')
 password = os.getenv('LOCAL_LOGIN_PASSWORD')
-print(username, password)
+# print(username, password)
 
 # login_url
 URL="https://www.abdn.ac.uk/mytimetable/sessions/login"
@@ -242,21 +242,77 @@ def get_index_time(class_divs, pixel_locations) -> int:
 
     return start_time_index,end_time_index
 
-""" This method parses the timetable data and schedules the classes"""
-def parse_timetable_data(timetable_data):
-    pass
+def get_access_token(client_id, client_secret, tenant_id):
+    authority = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
 
-def schedule_classes(email, password, task, date, time):
-    print("Scheduling task...")
+    payload = {
+        'grant_type': 'client_credentials',
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'scope': 'https://graph.microsoft.com/.default'
+    }
+
+    res = requests.post(authority, data=payload)
+
+    if res.status_code == 200:
+        print("Successfully retrieved access token")
+        return res.json()['access_token']
+    else:
+        return None
+    
+def parse_timetable_data(event, day):
+    # extract data from event
+    class_name = event['class_name']
+    class_location_name = event['class_location_name']
+    class_location_google_maps_link = event['class_location_google_maps_link']
+    start_time = event['start_time'] # 10:00
+    end_time = event['end_time'] # 11:00
+
+    days = {
+        'Monday': 0,
+        'Tuesday': 1,
+        'Wednesday': 2,
+        'Thursday': 3,
+        'Friday':4
+    }
+    # get the current date
+    current_date = datetime.now()
+
+    # Find the day number for the input day name
+    day_number = days.get(day)
+
+    date_difference = (day_number - current_date.weekday() + 7) % 7
+
+    new_date = current_date + timedelta(days=date_difference)
+
+    # get the date in the correct format
+    date = new_date.strftime("%Y-%m-%d") # 2024-01-21
+    
+    # Add leading zero to the hour if it's a single digit
+    if len(start_time) == 4:
+        start_time = "0" + start_time
+    if len(end_time) == 4:
+        end_time = "0" + end_time
+
+    # '2024-01-21T00:00:00'
+    # '2024-01-26T11:00:00'
+
+    outlook_start_time = f"{date}T{start_time}:00"
+    outlook_end_time = f"{date}T{end_time}:00"
+
+    print(class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time)
+    return class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time
+
 
 
 """ Main method """
-#authenicate(username, password, URL)
 data = get_timetable_data(authenicate(username, password, URL))
-print(data)
-#print(data)
-#parse_timetable_data(data)
-# pixel_locations = range(1, 1441, 60)
-# list(pixel_locations)
-# print(pixel_locations[10])
-# parse_timetable_data(data)
+client_id = "d08ae928-43ff-4fdd-8d35-ec6a76b031f4" # user_id
+tenant_id = "f6b8542a-8c6e-464a-9981-64d3419c30ea"
+client_secret = "XtT8Q~p4MncSfU0RisiwswkFkJejmJcHsA40vdoA"
+personal_access_token = get_access_token(client_id, client_secret, tenant_id)
+print(personal_access_token)
+for item in data:
+   class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time=parse_timetable_data(item['class'], item['day']) 
+
+
