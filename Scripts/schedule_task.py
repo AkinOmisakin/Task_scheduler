@@ -258,6 +258,7 @@ def get_access_token(client_id, client_secret, tenant_id):
         print("Successfully retrieved access token")
         return res.json()['access_token']
     else:
+        print("Could not retrieve access token")
         return None
     
 def parse_timetable_data(event, day):
@@ -294,15 +295,46 @@ def parse_timetable_data(event, day):
     if len(end_time) == 4:
         end_time = "0" + end_time
 
-    # '2024-01-21T00:00:00'
-    # '2024-01-26T11:00:00'
-
     outlook_start_time = f"{date}T{start_time}:00"
     outlook_end_time = f"{date}T{end_time}:00"
 
-    print(class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time)
     return class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time
 
+def schedule_tasks(access_token, outlook_start_time, outlook_end_time, class_name, class_location_name, class_location_google_maps_link):
+
+    url = f"https://graph.microsoft.com/v1.0/users/{client_id}/calendars/events"
+
+    headers = {
+        'Authorization': 'Bearer ' + access_token
+    }
+
+    # Create a new event
+    new_event = {
+        "subject": class_name,
+        "body": {
+            "contentType": "HTML",
+            "content": f"Location: {class_location_name} <br> Google Maps Link: {class_location_google_maps_link}"
+        },
+        "start": {
+            "dateTime": outlook_start_time,
+            "timeZone": "GMT Standard Time"
+        },
+        "end": {
+            "dateTime": outlook_end_time,
+            "timeZone": "GMT Standard Time"
+        },
+        "location": {
+            "displayName": class_location_name
+        }
+    }
+
+    request_create_event = requests.post(url, headers=headers, json=new_event)
+
+    if request_create_event.status_code == 201:
+        print("Successfully created event....")
+        print(request_create_event.json())
+    else:
+        print(f"Error creating event:{request_create_event.status_code}, {request_create_event.text}")
 
 
 """ Main method """
@@ -312,7 +344,7 @@ tenant_id = "f6b8542a-8c6e-464a-9981-64d3419c30ea"
 client_secret = "XtT8Q~p4MncSfU0RisiwswkFkJejmJcHsA40vdoA"
 personal_access_token = get_access_token(client_id, client_secret, tenant_id)
 print(personal_access_token)
-for item in data:
-   class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time=parse_timetable_data(item['class'], item['day']) 
-
+# for item in data:
+#     class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time=parse_timetable_data(item['class'], item['day'])
+#     schedule_tasks(personal_access_token, outlook_start_time, outlook_end_time, class_name, class_location_name, class_location_google_maps_link)
 
