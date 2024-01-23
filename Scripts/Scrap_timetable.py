@@ -1,5 +1,5 @@
 import os
-import requests
+import datetime
 from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -8,8 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from azure.identity.aio import ClientSecretCredential
-from msgraph import GraphServiceClient
 
 
 # Load the environment variables
@@ -60,7 +58,7 @@ def authenicate(username, password, url):
 def get_timetable_data(driver):
 
     # wait for the page to load
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(30)
     
     # get the page source
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -76,7 +74,6 @@ def get_timetable_data(driver):
     # get all the class times
     time_entries = timetable_.find("div", id="timetable-timeblock-header")
     
-
     for times in time_entries:
         timez.append(times.text)
 
@@ -242,24 +239,6 @@ def get_index_time(class_divs, pixel_locations) -> int:
 
     return start_time_index,end_time_index
 
-def get_access_token(client_id, client_secret, tenant_id):
-    authority = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-
-    payload = {
-        'grant_type': 'client_credentials',
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'scope': 'https://graph.microsoft.com/.default'
-    }
-
-    res = requests.post(authority, data=payload)
-
-    if res.status_code == 200:
-        print("Successfully retrieved access token")
-        return res.json()['access_token']
-    else:
-        print("Could not retrieve access token")
-        return None
     
 def parse_timetable_data(event, day):
     # extract data from event
@@ -298,53 +277,5 @@ def parse_timetable_data(event, day):
     outlook_start_time = f"{date}T{start_time}:00"
     outlook_end_time = f"{date}T{end_time}:00"
 
+    print(class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time)
     return class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time
-
-def schedule_tasks(access_token, outlook_start_time, outlook_end_time, class_name, class_location_name, class_location_google_maps_link):
-
-    url = f"https://graph.microsoft.com/v1.0/users/{client_id}/calendars/events"
-
-    headers = {
-        'Authorization': 'Bearer ' + access_token
-    }
-
-    # Create a new event
-    new_event = {
-        "subject": class_name,
-        "body": {
-            "contentType": "HTML",
-            "content": f"Location: {class_location_name} <br> Google Maps Link: {class_location_google_maps_link}"
-        },
-        "start": {
-            "dateTime": outlook_start_time,
-            "timeZone": "GMT Standard Time"
-        },
-        "end": {
-            "dateTime": outlook_end_time,
-            "timeZone": "GMT Standard Time"
-        },
-        "location": {
-            "displayName": class_location_name
-        }
-    }
-
-    request_create_event = requests.post(url, headers=headers, json=new_event)
-
-    if request_create_event.status_code == 201:
-        print("Successfully created event....")
-        print(request_create_event.json())
-    else:
-        print(f"Error creating event:{request_create_event.status_code}, {request_create_event.text}")
-
-
-""" Main method """
-data = get_timetable_data(authenicate(username, password, URL))
-client_id = "d08ae928-43ff-4fdd-8d35-ec6a76b031f4" # user_id
-tenant_id = "f6b8542a-8c6e-464a-9981-64d3419c30ea"
-client_secret = "XtT8Q~p4MncSfU0RisiwswkFkJejmJcHsA40vdoA"
-personal_access_token = get_access_token(client_id, client_secret, tenant_id)
-print(personal_access_token)
-# for item in data:
-#     class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time=parse_timetable_data(item['class'], item['day'])
-#     schedule_tasks(personal_access_token, outlook_start_time, outlook_end_time, class_name, class_location_name, class_location_google_maps_link)
-
