@@ -274,8 +274,8 @@ def parse_timetable_data(event, day):
     if len(end_time) == 4:
         end_time = "0" + end_time
 
-    outlook_start_time = f"{date}T{start_time}:00"
-    outlook_end_time = f"{date}T{end_time}:00"
+    outlook_start_time = f"{date}T{start_time}"
+    outlook_end_time = f"{date}T{end_time}"
 
     print(class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time)
     return class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time
