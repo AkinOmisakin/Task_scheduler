@@ -1,6 +1,0 @@
-selenium
-webdriver_manager
-bs4
-python-dotenv
-datetime
-
