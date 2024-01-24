@@ -18,4 +18,6 @@ So you will need to include the following file:
 * .env -> Can be used to store university login details e.g. LOGOIN_USERNAME=u04ty34 LOGIN_PASSWORD=Spuderman777
 * a credentials.json file -> This is obtained when you create and verify a project with your gmail account in Google cloud console
 * token.json -> This is generate when running the code in schedule_tasks.py
-* 
+
+# Reasons for making this 
+Super duper duper forgetful plus cant read timetable when super tired but am fully alert to time notifications :)
