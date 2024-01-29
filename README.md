@@ -1,5 +1,6 @@
 # Calendar Scheduler
 This project is a calendar scheduler that webscrapes the details of class from univeristy timetable and inputs it into your google calendar
+This scheduler is tasked on windows task scheduler to run every week Monday at "00:00"
 
 ## Installation 
 All necessary modules located in the requirments.txt
