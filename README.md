@@ -23,4 +23,4 @@ So you will need to include the following file:
 * token.json -> This is generate when running the code in schedule_tasks.py
 
 # Reasons for making this 
-Super duper duper forgetful plus cant read timetable when super tired but am fully alert to time notifications :)
+To practice webscraping and automated scheduling on windows :)
