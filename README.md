@@ -11,6 +11,9 @@ pip install -r requirements.txt
 # My Project
 ![Project Logo](Images/Timetable.png)
 ![Project Logo](Images/Calendar.png)
+![Project Logo](Images/Trigger.png)
+![Project Logo](Images/Time_interval.png)
+![Project Logo](Images/Start_program.png)
 
 # Additional Info
 Due to .gitignore necessary files containing sensitive infornmation are ommitted from this final commit
