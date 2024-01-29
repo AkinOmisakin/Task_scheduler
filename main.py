@@ -1,7 +1,7 @@
 import os
 from Scripts.Scrap_timetable import authenicate, get_timetable_data, parse_timetable_data
 from Scripts.schedule_tasks import schedule_task
-import datetime
+
 
 if __name__ == "__main__":
     
@@ -16,6 +16,7 @@ if __name__ == "__main__":
     password = os.getenv('LOCAL_LOGIN_PASSWORD')
 
     # print(username, password)
+
 
 
     data = get_timetable_data(authenicate(username, password, URL))
