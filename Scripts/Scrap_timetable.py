@@ -212,7 +212,7 @@ def get_timetable_data(driver):
             "class": class_constructer
         })
     
-
+    
     return timetable_data
 
 def get_index_time(class_divs, pixel_locations) -> int:

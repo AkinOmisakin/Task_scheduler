@@ -18,23 +18,29 @@ if __name__ == "__main__":
     # print(username, password)
 
 
+    try:
+        data = get_timetable_data(authenicate(username, password, URL))
 
-    data = get_timetable_data(authenicate(username, password, URL))
+        print(data)
 
-    print(data)
-
-    for Class in data:
-        class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time = parse_timetable_data(
-                                                                                                                    Class['class'],
-                                                                                                                    Class['day'])
-        schedule_task(
-            name=class_name,
-            location=class_location_name,
-            location_link=class_location_google_maps_link,
-            start_time=outlook_start_time,
-            end_time=outlook_end_time,
-            scope=SCOPES
-        )
+        for Class in data:
+            class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time = parse_timetable_data(
+                                                                                                                        Class['class'],
+                                                                                                                        Class['day'])
+            schedule_task(
+                name=class_name,
+                location=class_location_name,
+                location_link=class_location_google_maps_link,
+                start_time=outlook_start_time,
+                end_time=outlook_end_time,
+                scope=SCOPES
+            )
+        
+        os.remove('token.json')
+        
+    except Exception as e:
+        print(e)
+        print("An error occured while trying to get the timetable data")
 
         
     
