@@ -237,7 +237,7 @@ def get_index_time(class_divs, pixel_locations) -> int:
         if top_value + height_value == i:
             end_time_index = pixel_locations.index(int(top_value + height_value))
 
-    return start_time_index,end_time_index
+    return start_time_index-1,end_time_index-1
 
     
 def parse_timetable_data(event, day):
