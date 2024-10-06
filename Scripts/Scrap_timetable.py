@@ -17,7 +17,6 @@ load_dotenv(dotenv_path=dotenv_path)
 # read environment variables
 username = os.getenv('LOCAL_LOGIN_USERNAME')
 password = os.getenv('LOCAL_LOGIN_PASSWORD')
-# print(username, password)
 
 # login_url
 URL="https://www.abdn.ac.uk/mytimetable/sessions/login"

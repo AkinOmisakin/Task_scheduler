@@ -21,12 +21,11 @@ if __name__ == "__main__":
     try:
         data = get_timetable_data(authenicate(username, password, URL))
 
-        print(data)
-
         for Class in data:
             class_name, class_location_name, class_location_google_maps_link, outlook_start_time, outlook_end_time = parse_timetable_data(
                                                                                                                         Class['class'],
                                                                                                                         Class['day'])
+            print('Scheduling ...')
             schedule_task(
                 name=class_name,
                 location=class_location_name,
@@ -36,7 +35,7 @@ if __name__ == "__main__":
                 scope=SCOPES
             )
         
-        os.remove('token.json')
+        #os.remove('token.json')
         
     except Exception as e:
         print(e)
