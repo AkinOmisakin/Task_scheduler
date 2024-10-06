@@ -16,13 +16,17 @@ def authenticate_google_calendar():
     # The file token.json stores the user's access and refresh tokens and is created automatically
     # when the authorization flow completes for the first time.
     if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json')
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"An error occurred while refreshing the token: {e}")
+                creds = None
+        if not creds or not creds.valid:
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
